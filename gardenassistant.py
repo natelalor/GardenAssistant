@@ -122,7 +122,20 @@ def optimize_garden(dimensions_list, veggies_list):
         dimensions = (cursor.fetchone())
         veggie_dimensions.append(dimensions)
 
-    print(veggie_dimensions)
+    length_of_garden_feet = dimensions_list[0]
+    length_of_garden = length_of_garden_feet * 12
+    width_of_garden_feet = dimensions_list[1]
+    width_of_garden = width_of_garden_feet * 12
+    area_of_garden_feet = length_of_garden_feet * width_of_garden_feet
+    area_of_garden = length_of_garden * width_of_garden
+
+    # now that we have everything initialized and prepared, let's start
+    # the algorithm
+
+    
+
+
+
 
 
 
