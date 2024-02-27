@@ -10,7 +10,6 @@ import sqlite3
 
 
 def main():
-    print("Welcome to the Garden Assistant Application")
     dimensions_list = dimension_of_user_garden()
     database_initialization()
     veggie_list = vegetable_selection()
@@ -65,10 +64,10 @@ def database_initialization():
 
     conn.commit()
 
-    # code block to ensure execution success
-    cursor.execute("SELECT * FROM veggies")
-    results = cursor.fetchall()
-    print(results)
+    # # code block to ensure execution success
+    # cursor.execute("SELECT * FROM veggies")
+    # results = cursor.fetchall()
+    # print(results)
 
 
 # a function to gather data about
@@ -135,8 +134,6 @@ def optimize_garden(dimensions_list, veggies_list):
     length_of_garden = length_of_garden_feet * 12
     width_of_garden_feet = dimensions_list[1]
     width_of_garden = width_of_garden_feet * 12
-    area_of_garden_feet = length_of_garden_feet * width_of_garden_feet
-    area_of_garden = length_of_garden * width_of_garden
     
     # ALGORITHM TO FIND PERCENTAGE (dont think its needed)
     # for veggie_info in veggie_dimensions:
@@ -146,25 +143,55 @@ def optimize_garden(dimensions_list, veggies_list):
     # find maximum plants to fill 1 row without going over width of total area (and return how long it would be) (thus, we should know remainder as well)
     # find how long a row of each plant will be (and return the unit)
     total_length_all_veggies = 0
+    complete_veggie_information = []
     for veggie in veggie_info: 
         width_row_information = total_width_per_plant(width_of_garden, veggie)
-        total_length_per_row = veggie[2]
-        total_length_all_veggies += total_length_per_row
-    
+        total_length_all_veggies += veggie[2]
+
+        temp_veggie_list = []
+        temp_veggie_list.append(veggie[3]) # DENSITY
+        temp_veggie_list.append(veggie[0]) # NAME
+        temp_veggie_list.append(veggie[1]) # SBP
+        temp_veggie_list.append(veggie[2]) # SBR
+        temp_veggie_list.append(veggie[2]) # LENGTH PER ROW
+        temp_veggie_list.append(width_row_information) # WIDTH PER ROW
+
+        complete_veggie_information.append(temp_veggie_list)
 
     # add up all lengths of all plants to see if 1 row of each plant type doesn't exceed total length
-    # if length_of_garden > total_length_all_veggies:
-    #     # this means we can fit at least one row of each veggie type
+    if length_of_garden > total_length_all_veggies:
+        # this means we can fit at least one row of each veggie type
+        
+        # create set of veggies to send over to algorithm function (since we can fit one row of each, we send over all plant types)
+        # this set must be ordered by largest plant to smallest plant (of total area, so both sbp and sbr are considered)
+        sorted_complete_veggie_information = sorted(complete_veggie_information, reverse=True) # reverse so that largest is first
+        
+        # sorted_complete_veggie_information IS NOW IN FORMAT:
+        # [
+            # [BIGGEST density, name, sbp, sbr, length per row, [# of type able to be planted per row, total width per row]],
+            # [density, name, sbp, sbr, length per row, [# of type able to be planted per row, total width per row]],
+            # [density, name, sbp, sbr, length per row, [# of type able to be planted per row, total width per row]],
+            # ...
+            # ...
+            # ...
+            # [SMALLEST density, name, sbp, sbr, length per row, [# of type able to be planted per row, total width per row]]
+        # ]
 
 
-    #     # print("One row of each veggie can fit into your garden. It will be ", total_length_all_veggies, "inches and you will have ", length_of_garden-total_length_all_veggies, " space left over.")
+        # now we call algorithm with the sorted list, as well as the dimensions of the garden to fill it
+        fill_the_garden(sorted_complete_veggie_information, length_of_garden, width_of_garden)
 
-    # else:
+
+
+
+        # print("One row of each veggie can fit into your garden. It will be ", total_length_all_veggies, "inches and you will have ", length_of_garden-total_length_all_veggies, " space left over.")
+
+    else:
         # this means we cannot fit one row of each veggie type
+        hi = 1
 
-
-    # now that we have everything initialized and prepared, let's start
-    # the algorithm
+        # TODO: we have to facilitate the splitting into columns and subsets of veggies here.
+        # once that is done, we can call fill_the_garden() on both subsets
 
 
 
@@ -186,10 +213,27 @@ def total_width_per_plant(width_of_garden, veggie):
 
     # print("You can fit ", counter, veggie[0] + "s into your garden. It will take up ", total_width_taken_in_inches, " inches of width, and you will have ", width_of_garden, " left over.")
 
+    # counter = how many of that plant type can be planted per row
+    # total_width_taken_in_inches = how long the row is (before running out of room in garden)
     width_row_information = [counter, total_width_taken_in_inches]
     return width_row_information
 
+# this is the main algorithm chunk, where it facilitates
+# filling up the garden in the best way possible, iterating
+# between rows and plant types until all the possible plants are planted.
+def fill_the_garden(sorted_complete_veggie_information, length_of_garden, width_of_garden):
+    # this will facilitate changing the plant type using density_list
+    iterator = 0
 
+    print(sorted_complete_veggie_information) 
+    # some condition here?
+    # is there enough room for another row of the biggest plant?
+        #add it
+    # else
+
+
+
+    return 1 
 
 
 
