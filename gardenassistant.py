@@ -120,15 +120,21 @@ def optimize_garden(dimensions_list, veggies_list):
         execute_statement = "SELECT sbp, sbr FROM veggies WHERE veggie_id=" + num
         cursor.execute(execute_statement)
         dimensions = (cursor.fetchone())
+
+        # now add a third int, density of veggie
+        dimensions = list(dimensions)
+        density = dimensions[0] * dimensions[1]
+        dimensions.append(density)
         veggie_dimensions.append(dimensions)
 
+    # analyze units recieved and prepare variables for algorithm
     length_of_garden_feet = dimensions_list[0]
     length_of_garden = length_of_garden_feet * 12
     width_of_garden_feet = dimensions_list[1]
     width_of_garden = width_of_garden_feet * 12
     area_of_garden_feet = length_of_garden_feet * width_of_garden_feet
     area_of_garden = length_of_garden * width_of_garden
-
+    
     # now that we have everything initialized and prepared, let's start
     # the algorithm
 
