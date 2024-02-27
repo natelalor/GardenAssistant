@@ -117,13 +117,13 @@ def optimize_garden(dimensions_list, veggies_list):
     veggie_dimensions = []
     # retrieve veggies associated to each pk / integer in veggies_list
     for num in veggies_list:
-        execute_statement = "SELECT sbp, sbr FROM veggies WHERE veggie_id=" + num
+        execute_statement = "SELECT name, sbp, sbr FROM veggies WHERE veggie_id=" + num
         cursor.execute(execute_statement)
         dimensions = (cursor.fetchone())
 
-        # now add a third int, density of veggie
+        # now add a third unit, density of veggie
         dimensions = list(dimensions)
-        density = dimensions[0] * dimensions[1]
+        density = dimensions[1] * dimensions[2]
         dimensions.append(density)
         veggie_dimensions.append(dimensions)
 
@@ -135,9 +135,24 @@ def optimize_garden(dimensions_list, veggies_list):
     area_of_garden_feet = length_of_garden_feet * width_of_garden_feet
     area_of_garden = length_of_garden * width_of_garden
     
+    # ALGORITHM TO FIND PERCENTAGE (dont think its needed)
+    # for veggie_info in veggie_dimensions:
+    #     percent_of_area = 100 * (float(veggie_info[2]) / float(area_of_garden))
+    #     print("Veggie takes up ", percent_of_area, "%% of the garden, with a density of ", veggie_info[2])
+    
+    # find total area of 
     # now that we have everything initialized and prepared, let's start
     # the algorithm
+    print(veggie_dimensions)
 
+
+
+
+
+def find_row_size():
+    total_size = 0
+
+    return total_size
     
 
 
