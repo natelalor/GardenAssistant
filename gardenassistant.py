@@ -22,9 +22,14 @@ def main():
     
     print(my_garden.length)
 
-    # user input to populate garden length & width
+    # figure out which veggies they are using
+    veggie_list = vegetable_selection()
 
     # run algorithm to decide # of column objects to store in garden collection
+    list_of_columns = how_many_columns(veggie_list, my_garden)
+
+
+    
 
 
 
@@ -81,9 +86,56 @@ def database_initialization():
     conn.commit()
 
 
+# a function to facilitate the selection
+# of vegetables by the user
+def vegetable_selection():
+    print("Vegetable Key List:")
+    print("--------------------------")
+    print("1 - Carrot")
+    print("2 - Potato")
+    print("3 - Tomato")
+    print("4 - Brussel Sprout")
+    print("5 - Spinach")
+    print("6 - Broccoli")
+    print("7 - Snap Peas")
+    print("8 - Onion")
+    print("9 - Lettuce")
+    print("10 - Cabbage")
+    print("--------------------------")
+    raw_user_veggie_list = input("Please write down all numbers associated with the vegetables you want to plant: ")
+
+    # turn user's feedback into a list of primary keys associated with out db,
+    # i.e., create a list of keys for which veggies to select from db
+    sanitized_raw_user_veggie_list = raw_user_veggie_list.replace(" ", "")
+    user_veggie_list = list(sanitized_raw_user_veggie_list)
+    return user_veggie_list
 
 
 
+
+
+def how_many_columns(veggie_list, my_garden):
+    # establish connection to db
+    conn = sqlite3.connect("veggies.db")
+    cursor = conn.cursor()
+
+    total_sbr = 0
+    for num in veggie_list:
+        cursor.execute("SELECT sbr FROM veggies WHERE veggie_id=" + num)
+        result = cursor.fetchone()
+        sbr = result[0]
+        total_sbr += sbr
+
+    print(total_sbr)
+
+    subsets = []
+    if my_garden.length > total_sbr:
+        subsets.append(veggie_list)
+        return subsets
+    else:
+        #this is where we need to figure out how many columns to add
+        pass
+        
 
 
 
