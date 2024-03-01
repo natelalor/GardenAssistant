@@ -44,6 +44,12 @@ def main():
         my_garden.columns.append(new_col)
     print("COLUMNS: ", my_garden.columns)
 
+    # algorithm to create rows
+
+    # algorithm to populate columns
+    # until garden is FULL
+    
+
 
 
 
