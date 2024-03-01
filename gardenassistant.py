@@ -8,6 +8,7 @@
 # imports
 import sqlite3
 from Garden import Garden
+from Column import Column
 
 
 def main():
@@ -19,17 +20,34 @@ def main():
     l_input = float(input("Length of Garden: "))
     w_input = float(input("Width of Garden: "))
     my_garden = Garden(l_input, w_input)
-    
-    print(my_garden.length)
 
     # figure out which veggies they are using
     veggie_list = vegetable_selection()
 
     # run algorithm to decide # of column objects to store in garden collection
-    list_of_columns = how_many_columns(veggie_list, my_garden)
-
-
+    subsets, number_of_columns = how_many_columns(veggie_list, my_garden)
+    print("You will need ", number_of_columns, " columns in your garden.")
+    print("Here is your plant list, displayed for each column: ")
+    print("----------------------------")
+    for index, column in enumerate(subsets):
+        print("Column ", index + 1, ": ", column)
     
+    # figure out width needed per column
+    width_per_column = float(my_garden.width / number_of_columns)
+
+    # create columns and add it to garden's collection of columns
+    
+    counter = 0
+    while counter <= number_of_columns:
+        # TODO: do I need to initialize row collection here during column creation, as well as width? idk yet
+        new_col = Column(width_per_column)
+        my_garden.columns.append(new_col)
+    print("COLUMNS: ", my_garden.columns)
+
+
+
+
+
 
 
 
@@ -37,10 +55,6 @@ def main():
 # =========================================== #
 #      BEGINNING OF SUPPORTING FUNCTIONS      #
 # =========================================== #
-    
-
-
-
 
 
 # function to establish connection to the database,
@@ -102,7 +116,9 @@ def vegetable_selection():
     print("9 - Lettuce")
     print("10 - Cabbage")
     print("--------------------------")
-    raw_user_veggie_list = input("Please write down all numbers associated with the vegetables you want to plant: ")
+    raw_user_veggie_list = input(
+        "Please write down all numbers associated with the vegetables you want to plant: "
+    )
 
     # turn user's feedback into a list of primary keys associated with out db,
     # i.e., create a list of keys for which veggies to select from db
@@ -111,41 +127,91 @@ def vegetable_selection():
     return user_veggie_list
 
 
-
-
-
 def how_many_columns(veggie_list, my_garden):
     # establish connection to db
     conn = sqlite3.connect("veggies.db")
     cursor = conn.cursor()
 
     total_sbr = 0
+    sbr_list = []
     for num in veggie_list:
         cursor.execute("SELECT sbr FROM veggies WHERE veggie_id=" + num)
         result = cursor.fetchone()
         sbr = result[0]
         total_sbr += sbr
+        sbr_list.append(sbr)
 
     print(total_sbr)
 
     subsets = []
-    if my_garden.length > total_sbr:
+    # TODO: FIX THIS!!!! CHANGE * 12! 'length' INPUT WONT ALWAYS BE IN FEET!
+    if (my_garden.length * 12) > total_sbr:
         subsets.append(veggie_list)
-        return subsets
+        return subsets, 1
     else:
-        #this is where we need to figure out how many columns to add
-        pass
-        
+        # this is where we need to figure out how many columns to add
+        subsets, number_of_columns = column_facilitator(2, (my_garden.length * 12), subsets, veggie_list, sbr_list)
+        return subsets, number_of_columns
 
+
+# Recursive function to sort plants into necessary # of columns
+# to be within the length of garden
+def column_facilitator(number_of_subsets, total_length, subsets, veggie_list, sbr_list):
+
+    conn = sqlite3.connect("veggies.db")
+    cursor = conn.cursor()
+
+    # divvy up plants into equal chunks
+    subsets = chunkify(veggie_list, number_of_subsets)
+
+    # now, match the sbr_subsets list to be the same exact format as subsets list
+    # i.e., make it a list of lists, where each list holds the same subset of plants
+    sbr_subsets = []
+    highest_sbr = -1
+    for list in subsets:
+        new_list = []
+        for veggie in list:
+            cursor.execute("SELECT sbr FROM veggies WHERE veggie_id=" + veggie)
+            result = cursor.fetchone()
+            sbr = result[0]
+            new_list.append(sbr)
+
+            # find the highest sbr value among all the plant's sbrs
+            if sbr > highest_sbr:
+                highest_sbr = sbr
+
+        sbr_subsets.append(new_list)
+
+    # TODO: MAKE THIS ALGORITHM MORE EFFICIENT!
+    # goal of algorithm:
+    # sbr_subsets is currently [[24, 5], [23]]
+    # we test highest sbr against total length, so we need to add
+    # together all sbr's that are in the same sublist
+    # so, 24+5 = 29 -- new highest sbr
+    for index, list in enumerate(sbr_subsets):
+        if len(list) > 1:
+            new_num = 0
+            for sbr_value in list:
+                new_num += sbr_value
+            if new_num > highest_sbr:
+                highest_sbr = new_num
+
+    # print("SBR_SUBSETS:", sbr_subsets)
+    # print("HIGHEST SBR: ", highest_sbr)
+
+    # base case
+    if highest_sbr < total_length:
+        return subsets, number_of_subsets
+    else:
+        column_facilitator(
+            number_of_subsets + 1, total_length, subsets, veggie_list, sbr_list
+        )
+
+
+# thank you for this contribution, https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
+def chunkify(lst, n):
+    return [lst[i::n] for i in range(n)]
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
