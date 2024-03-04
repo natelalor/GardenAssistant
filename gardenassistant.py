@@ -38,16 +38,24 @@ def main():
     # create columns and add it to garden's collection of columns
     
     counter = 0
-    while counter <= number_of_columns:
+    while counter < number_of_columns:
         # TODO: do I need to initialize row collection here during column creation, as well as width? idk yet
         new_col = Column(width_per_column)
         my_garden.columns.append(new_col)
-    print("COLUMNS: ", my_garden.columns)
+        counter += 1
+
+    # algorithm to populate columns
+    # until garden is FULL of rows
+    for column in my_garden.columns:
+        fill_the_garden(column, subsets)
+
 
     # algorithm to create rows
 
-    # algorithm to populate columns
-    # until garden is FULL
+
+    
+        
+    # add rows to columns
     
 
 
@@ -217,6 +225,29 @@ def column_facilitator(number_of_subsets, total_length, subsets, veggie_list, sb
 # thank you for this contribution, https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
 def chunkify(lst, n):
     return [lst[i::n] for i in range(n)]
+
+
+
+
+# a function to fill the column with rows of it's associated list of veggies
+# then will return amount of rows of which plant
+def fill_the_garden(column, subsets):
+   
+    print("COLUMN: ", column)
+    print("SUBSETS: ", subsets)
+    # WILL CREATE ROW OBJECTS IN HERE, at the end of the if chain
+
+
+    return 1
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
