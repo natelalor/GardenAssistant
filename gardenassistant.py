@@ -9,6 +9,7 @@
 import sqlite3
 from Garden import Garden
 from Column import Column
+from Row import Row
 
 
 def main():
@@ -46,8 +47,8 @@ def main():
 
     # algorithm to populate columns
     # until garden is FULL of rows
-    for column in my_garden.columns:
-        fill_the_garden(column, subsets)
+    for index, column in enumerate(my_garden.columns):
+        fill_the_garden(column, subsets[index], my_garden.width, my_garden.length)
 
 
     # algorithm to create rows
@@ -210,9 +211,6 @@ def column_facilitator(number_of_subsets, total_length, subsets, veggie_list, sb
             if new_num > highest_sbr:
                 highest_sbr = new_num
 
-    # print("SBR_SUBSETS:", sbr_subsets)
-    # print("HIGHEST SBR: ", highest_sbr)
-
     # base case
     if highest_sbr < total_length:
         return subsets, number_of_subsets
@@ -231,10 +229,51 @@ def chunkify(lst, n):
 
 # a function to fill the column with rows of it's associated list of veggies
 # then will return amount of rows of which plant
-def fill_the_garden(column, subsets):
+def fill_the_garden(column, subsets, total_width, total_length):
    
     print("COLUMN: ", column)
     print("SUBSETS: ", subsets)
+
+    # also will query database to retrieve SBP info for each plant, to see how it will apply to length
+
+    # establish connection to db
+    conn = sqlite3.connect("veggies.db")
+    cursor = conn.cursor()
+
+    remaining_length = total_length
+
+    results_list = []
+
+    # initial 1 of every veggie down
+    for list in subsets:
+        for veggie in list:
+            cursor.execute("SELECT sbr, sbp FROM veggies WHERE veggie_id=" + veggie)
+            result = cursor.fetchone()
+            sbr = result[0]
+            sbp = result[1]
+            
+            # figure out how many plants you can make per row
+            total_plants_per_row = (total_width * 12) // sbp
+            print("able to plant ", total_plants_per_row, " veggies of plant type ", veggie, " per row.")
+
+            remaining_length -= sbr
+            number_of_rows = 1
+            new_list = [total_plants_per_row, number_of_rows]
+
+            results_list.append(new_list)
+            new_row = Row(veggie)
+            column.rows.append(new_row)
+
+    
+    print(results_list)
+    # TODO:
+    # implement the if chains here, start iterating through all plant types
+    # and see if you can add a row of it (restraints: if remaining_length - sbr > 0)     <--- this means we will need to save the sbr, 
+    # make sure to have EQUAL plant type representation, refer to illustrating in book!      do we make anothr function? or sbr_list again?
+
+            
+
+
     # WILL CREATE ROW OBJECTS IN HERE, at the end of the if chain
 
 
