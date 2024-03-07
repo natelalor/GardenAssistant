@@ -143,16 +143,10 @@ def vegetable_selection():
 
 
 def how_many_columns(veggie_list, my_garden):
-    # establish connection to db
-    conn = sqlite3.connect("veggies.db")
-    cursor = conn.cursor()
-
     total_sbr = 0
     sbr_list = []
     for num in veggie_list:
-        cursor.execute("SELECT sbr FROM veggies WHERE veggie_id=" + num)
-        result = cursor.fetchone()
-        sbr = result[0]
+        sbr = retrieve_sbr(num)
         total_sbr += sbr
         sbr_list.append(sbr)
 
@@ -186,9 +180,7 @@ def column_facilitator(number_of_subsets, total_length, subsets, veggie_list, sb
     for list in subsets:
         new_list = []
         for veggie in list:
-            cursor.execute("SELECT sbr FROM veggies WHERE veggie_id=" + veggie)
-            result = cursor.fetchone()
-            sbr = result[0]
+            sbr = retrieve_sbr(veggie)
             new_list.append(sbr)
 
             # find the highest sbr value among all the plant's sbrs
@@ -225,14 +217,12 @@ def chunkify(lst, n):
     return [lst[i::n] for i in range(n)]
 
 
-
-
 # a function to fill the column with rows of it's associated list of veggies
 # then will return amount of rows of which plant
-def fill_the_garden(column, subsets, total_width, total_length):
+def fill_the_garden(column, subset, total_width, total_length):
    
     print("COLUMN: ", column)
-    print("SUBSETS: ", subsets)
+    print("SUBSETS: ", subset)
 
     # also will query database to retrieve SBP info for each plant, to see how it will apply to length
 
@@ -245,13 +235,16 @@ def fill_the_garden(column, subsets, total_width, total_length):
     results_list = []
 
     # initial 1 of every veggie down
-    for list in subsets:
+    total_sbr_list = []
+    for list in subset: # this is because input is a list in a list, gotta iterate through outer shell first (not more complex)
+        sbr_list = []
         for veggie in list:
             cursor.execute("SELECT sbr, sbp FROM veggies WHERE veggie_id=" + veggie)
             result = cursor.fetchone()
             sbr = result[0]
             sbp = result[1]
-            
+            sbr_list.append(sbr)
+
             # figure out how many plants you can make per row
             total_plants_per_row = (total_width * 12) // sbp
             print("able to plant ", total_plants_per_row, " veggies of plant type ", veggie, " per row.")
@@ -263,7 +256,7 @@ def fill_the_garden(column, subsets, total_width, total_length):
             results_list.append(new_list)
             new_row = Row(veggie)
             column.rows.append(new_row)
-
+        total_sbr_list.append(sbr_list)
     
     print(results_list)
     # TODO:
@@ -271,7 +264,8 @@ def fill_the_garden(column, subsets, total_width, total_length):
     # and see if you can add a row of it (restraints: if remaining_length - sbr > 0)     <--- this means we will need to save the sbr, 
     # make sure to have EQUAL plant type representation, refer to illustrating in book!      do we make anothr function? or sbr_list again?
 
-            
+    iterator = 0
+    print(total_sbr_list)
 
 
     # WILL CREATE ROW OBJECTS IN HERE, at the end of the if chain
@@ -283,7 +277,16 @@ def fill_the_garden(column, subsets, total_width, total_length):
 
 
 
+def retrieve_sbr(num):
+    # establish connection to db
+    conn = sqlite3.connect("veggies.db")
+    cursor = conn.cursor()
 
+    cursor.execute("SELECT sbr FROM veggies WHERE veggie_id=" + num)
+    result = cursor.fetchone()
+    sbr = result[0]
+
+    return sbr
 
 
 
