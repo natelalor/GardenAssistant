@@ -274,11 +274,11 @@ def fill_the_garden(column, subset, total_width, total_length):
 
     # print("SIZES:::::", len(results_list), len(total_sbr_list), len(total_plants_per_row_per_plant))
     # print("while ", remaining_length, "is greater than", smallest_sbr)
-    while remaining_length > smallest_sbr:
+    while remaining_length >= smallest_sbr:
         print("===============  NEW  WHILE  ITERATION  ===============")
         # print("ITERATOR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", iterator)
-        print("if", remaining_length, "-", total_sbr_list[iterator][0], "is greater than 0")
-        if remaining_length - total_sbr_list[iterator][0] > 0:
+        print("if", remaining_length, "-", total_sbr_list[iterator][0], "is greater than or equal to 0")
+        if remaining_length - total_sbr_list[iterator][0] >= 0:
             # means we can add another row of current plant
             # print("HORRAY! we can add plant!")
 
