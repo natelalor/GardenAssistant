@@ -7,6 +7,7 @@
 
 # imports
 import sqlite3
+from pprint import pprint
 from Garden import Garden
 from Column import Column
 from Row import Row
@@ -32,12 +33,12 @@ def main():
     print("----------------------------")
     for index, column in enumerate(subsets):
         print("Column ", index + 1, ": ", column)
-    
+
     # figure out width needed per column
     width_per_column = float(my_garden.width / number_of_columns)
 
     # create columns and add it to garden's collection of columns
-    
+
     counter = 0
     while counter < number_of_columns:
         # TODO: do I need to initialize row collection here during column creation, as well as width? idk yet
@@ -48,23 +49,34 @@ def main():
     # algorithm to populate columns
     # until garden is FULL of rows
     for index, column in enumerate(my_garden.columns):
-        fill_the_garden(column, subsets[index], my_garden.width, my_garden.length)
-
-
+        result_list = fill_the_garden(column, subsets[index], my_garden.width, my_garden.length, veggie_list)
+        
     # algorithm to create rows
 
+        # TODO:
+    # add here of showing all the data. This is all easy except:
+    # - matching plant type to format of result_list (which doesn't have plant type in it)
+            # so we will need to iterate thru veggie_list and result_list with an iterator or something
+    # - when you need multiple columns, how do we store result_list differently? Do we make a larger list
+            # to hold all of the result_lists? Then show that?
+    
+    print("================== RESULTS ==================")
+    print("Columns: ", len(my_garden.columns))
+    print("Plants in columns: ", subsets)
+    print(result_list)
+    print(veggie_list)
+
+    iterator = 0
+    for veggie in veggie_list:
+        print("You can plant", result_list[iterator][0], veggie_list[iterator] + "s in your garden via", result_list[iterator][1], "rows,")
+        iterator += 1
+
+    # TODO: do we make a variable in Column class so column objects count how many row of each plant type they are holding?
+    # how do we collect which veggies are in each row??? how do we add that up?
+
+
 
     
-        
-    # add rows to columns
-    
-
-
-
-
-
-
-
 
 
 # =========================================== #
@@ -159,7 +171,9 @@ def how_many_columns(veggie_list, my_garden):
         return subsets, 1
     else:
         # this is where we need to figure out how many columns to add
-        subsets, number_of_columns = column_facilitator(2, (my_garden.length * 12), subsets, veggie_list, sbr_list)
+        subsets, number_of_columns = column_facilitator(
+            2, (my_garden.length * 12), subsets, veggie_list, sbr_list
+        )
         return subsets, number_of_columns
 
 
@@ -219,8 +233,8 @@ def chunkify(lst, n):
 
 # a function to fill the column with rows of it's associated list of veggies
 # then will return amount of rows of which plant
-def fill_the_garden(column, subset, total_width, total_length):
-   
+def fill_the_garden(column, subset, total_width, total_length, veggie_list):
+
     print("COLUMN: ", column)
     print("SUBSETS: ", subset)
 
@@ -238,7 +252,11 @@ def fill_the_garden(column, subset, total_width, total_length):
     total_sbr_list = []
     total_plants_per_row_per_plant = []
     smallest_sbr = 999
-    for list in subset: # this is because input is a list in a list, gotta iterate through outer shell first (not more complex)
+    for (
+        list
+    ) in (
+        subset
+    ):  # this is because input is a list in a list, gotta iterate through outer shell first (not more complex)
         sbr_list = []
         for veggie in list:
             cursor.execute("SELECT sbr, sbp FROM veggies WHERE veggie_id=" + veggie)
@@ -264,26 +282,19 @@ def fill_the_garden(column, subset, total_width, total_length):
             new_row = Row(veggie)
             column.rows.append(new_row)
         total_sbr_list.append(sbr_list)
-    
+
     print(results_list)
     print("SBR LIST:", total_sbr_list)
 
     # represents the position in the lists of the different plants
     iterator = 0
-    # results_list, total_sbr_list, total_plants_per_row_per_plant
 
-    # print("SIZES:::::", len(results_list), len(total_sbr_list), len(total_plants_per_row_per_plant))
-    # print("while ", remaining_length, "is greater than", smallest_sbr)
+    # main loop: will keep adding plants, iterating through plant type (for equal representation), 
+    # until there is no more length available 
     while remaining_length >= smallest_sbr:
-        print("===============  NEW  WHILE  ITERATION  ===============")
-        # print("ITERATOR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", iterator)
-        print("if", remaining_length, "-", total_sbr_list[iterator][0], "is greater than or equal to 0")
+        
         if remaining_length - total_sbr_list[iterator][0] >= 0:
             # means we can add another row of current plant
-            # print("HORRAY! we can add plant!")
-
-            print(results_list[iterator][0], "+= ", total_plants_per_row_per_plant[iterator])
-            print(remaining_length, "-=", total_sbr_list[iterator][0])
 
             # update # plant type planted
             results_list[iterator][0] += total_plants_per_row_per_plant[iterator]
@@ -292,34 +303,17 @@ def fill_the_garden(column, subset, total_width, total_length):
             # update number of rows made of each plant
             results_list[iterator][1] += 1
 
-            # TODO: make a new row object with the right veggie_id whenever you do
-            # also make sure it is in the column collection
+            new_row = Row(str(iterator + 1))
+            column.rows.append(new_row)
 
-            print("NEW RESULTS_LIST:", results_list)
-            print("NEW REMAINING_LENGTH:", remaining_length)
-
-            # move iterators to access new plant info
-            if iterator == len(total_sbr_list) - 1:
-                # restart with first plant
-                iterator == 0
-            else:
-                iterator += 1
+        # move iterators to access new plant info
+        if iterator == len(total_sbr_list) - 1:
+            # restart with first plant
+            iterator = 0
         else:
-            print("Cannot plant current plant type. Moving on to next plant type.")
-
-            # move iterators to access new plant info
-            if iterator == len(total_sbr_list) - 1:
-                # restart with first plant
-                iterator == 0
-            else:
-                iterator += 1
-
-
+            iterator += 1
 
     return results_list
-
-
-
 
 
 def retrieve_sbr(num):
@@ -332,9 +326,6 @@ def retrieve_sbr(num):
     sbr = result[0]
 
     return sbr
-
-
-
 
 
 if __name__ == "__main__":
