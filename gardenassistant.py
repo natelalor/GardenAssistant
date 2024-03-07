@@ -230,12 +230,14 @@ def fill_the_garden(column, subset, total_width, total_length):
     conn = sqlite3.connect("veggies.db")
     cursor = conn.cursor()
 
-    remaining_length = total_length
+    remaining_length = total_length * 12
 
     results_list = []
 
     # initial 1 of every veggie down
     total_sbr_list = []
+    total_plants_per_row_per_plant = []
+    smallest_sbr = 999
     for list in subset: # this is because input is a list in a list, gotta iterate through outer shell first (not more complex)
         sbr_list = []
         for veggie in list:
@@ -245,9 +247,14 @@ def fill_the_garden(column, subset, total_width, total_length):
             sbp = result[1]
             sbr_list.append(sbr)
 
+            # find smallest sbr
+            if smallest_sbr > sbr:
+                smallest_sbr = sbr
+
             # figure out how many plants you can make per row
             total_plants_per_row = (total_width * 12) // sbp
-            print("able to plant ", total_plants_per_row, " veggies of plant type ", veggie, " per row.")
+            total_plants_per_row_per_plant.append(total_plants_per_row)
+            # print("able to plant ", total_plants_per_row, " veggies of plant type ", veggie, " per row.")
 
             remaining_length -= sbr
             number_of_rows = 1
@@ -259,19 +266,57 @@ def fill_the_garden(column, subset, total_width, total_length):
         total_sbr_list.append(sbr_list)
     
     print(results_list)
-    # TODO:
-    # implement the if chains here, start iterating through all plant types
-    # and see if you can add a row of it (restraints: if remaining_length - sbr > 0)     <--- this means we will need to save the sbr, 
-    # make sure to have EQUAL plant type representation, refer to illustrating in book!      do we make anothr function? or sbr_list again?
+    print("SBR LIST:", total_sbr_list)
 
+    # represents the position in the lists of the different plants
     iterator = 0
-    print(total_sbr_list)
+    # results_list, total_sbr_list, total_plants_per_row_per_plant
+
+    # print("SIZES:::::", len(results_list), len(total_sbr_list), len(total_plants_per_row_per_plant))
+    # print("while ", remaining_length, "is greater than", smallest_sbr)
+    while remaining_length > smallest_sbr:
+        print("===============  NEW  WHILE  ITERATION  ===============")
+        # print("ITERATOR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", iterator)
+        print("if", remaining_length, "-", total_sbr_list[iterator][0], "is greater than 0")
+        if remaining_length - total_sbr_list[iterator][0] > 0:
+            # means we can add another row of current plant
+            # print("HORRAY! we can add plant!")
+
+            print(results_list[iterator][0], "+= ", total_plants_per_row_per_plant[iterator])
+            print(remaining_length, "-=", total_sbr_list[iterator][0])
+
+            # update # plant type planted
+            results_list[iterator][0] += total_plants_per_row_per_plant[iterator]
+            remaining_length -= total_sbr_list[iterator][0]
+
+            # update number of rows made of each plant
+            results_list[iterator][1] += 1
+
+            # TODO: make a new row object with the right veggie_id whenever you do
+            # also make sure it is in the column collection
+
+            print("NEW RESULTS_LIST:", results_list)
+            print("NEW REMAINING_LENGTH:", remaining_length)
+
+            # move iterators to access new plant info
+            if iterator == len(total_sbr_list) - 1:
+                # restart with first plant
+                iterator == 0
+            else:
+                iterator += 1
+        else:
+            print("Cannot plant current plant type. Moving on to next plant type.")
+
+            # move iterators to access new plant info
+            if iterator == len(total_sbr_list) - 1:
+                # restart with first plant
+                iterator == 0
+            else:
+                iterator += 1
 
 
-    # WILL CREATE ROW OBJECTS IN HERE, at the end of the if chain
 
-
-    return 1
+    return results_list
 
 
 
