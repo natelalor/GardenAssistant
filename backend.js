@@ -7,27 +7,10 @@
 // this is for the convenience of easier hosting and learning javascript
 
 const sqlite3 = require('sqlite3').verbose();
+const Garden = require('./Garden');
+const Column = require('./Column');
+const Row = require('./Row');
 
-class Garden {
-    constructor(length, width) {
-        this.length = length;
-        this.width = width;
-        this.columns = [];
-    }
-}
-
-class Column {
-    constructor(width) {
-        this.width = width;
-        this.rows = [];
-    }
-}
-
-class Row {
-    constructor(plantType) {
-        this.plantType = plantType;
-    }
-}
 
 function main() {
     // set up the database
@@ -169,13 +152,87 @@ function fillTheGarden(column, subset, total_width, total_length, veggie_list) {
     console.log("COLUMN: ", column);
     console.log("SUBSETS: ", subset);
 
-    // Placeholder logic, needs to be replaced with actual implementation
-    return [];
+    // Establish connection to database
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database('veggies.db');
+
+    let remainingLength = totalLength * 12;
+    let resultsList = [];
+    let totalSbrList = [];
+    let totalPlantsPerRowPerPlant = [];
+    let smallestSbr = 999;
+
+    for (const list of subset) {
+        let sbrList = [];
+        for (const veggie of list) {
+            const sql = `SELECT sbr, sbp FROM veggies WHERE veggie_id = ?`;
+            db.get(sql, [veggie], (err, row) => {
+                if (err) {
+                    console.error(err.message);
+                    return;
+                }
+                const sbr = row.sbr;
+                const sbp = row.sbp;
+                sbrList.push(sbr);
+
+                if (smallestSbr > sbr) {
+                    smallestSbr = sbr;
+                }
+
+                const totalPlantsPerRow = Math.floor((totalWidth * 12) / sbp);
+                totalPlantsPerRowPerPlant.push(totalPlantsPerRow);
+
+                remainingLength -= sbr;
+                const number_of_rows = 1;
+                const newList = [totalPlantsPerRow, number_of_rows];
+                resultsList.push(newList);
+
+                const new_row = new Row(veggie);
+                column.rows.push(new_row);
+            });
+        }
+        totalSbrList.push(sbrList);
+    }
+
+    console.log(resultsList);
+    console.log("SBR LIST:", totalSbrList);
+
+    let iterator = 0;
+
+    while (remainingLength >= smallestSbr) {
+        if (remainingLength - totalSbrList[iterator][0] >= 0) {
+            resultsList[iterator][0] += totalPlantsPerRowPerPlant[iterator];
+            remainingLength -= totalSbrList[iterator][0];
+            resultsList[iterator][1] += 1;
+
+            const new_row = new Row(iterator + 1);
+            column.rows.push(new_row);
+        }
+
+        if (iterator === totalSbrList.length - 1) {
+            iterator = 0;
+        } else {
+            iterator += 1;
+        }
+    }
+
+    return resultsList;
 }
 
 function retrieveSBR(num) {
-    // Placeholder logic, needs to be replaced with actual implementation
-    return 0;
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database('veggies.db');
+
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT sbr FROM veggies WHERE veggie_id = ?';
+        db.get(sql, [num], (err, row) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(row.sbr);
+            }
+        });
+    });
 }
 
 main();
