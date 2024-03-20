@@ -68,12 +68,12 @@ def main():
 
     iterator = 0
     for veggie in veggie_list:
-        print("You can plant", result_list[iterator][0], veggie_list[iterator] + "s in your garden via", result_list[iterator][1], "rows,")
+        print("You can plant", result_list[iterator][0], veggie_list[iterator] + "s in your garden via", result_list[iterator][1], "rows")
         iterator += 1
 
     # TODO: do we make a variable in Column class so column objects count how many row of each plant type they are holding?
     # how do we collect which veggies are in each row??? how do we add that up?
-
+    
 
 
     
