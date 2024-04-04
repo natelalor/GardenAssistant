@@ -14,7 +14,11 @@ import './App.css'
 
 function App() {
   // const [count, setCount] = useState(0)
+  const [data, setData] = useState()
 
+  useEffect(() => {
+    
+  }, [])
   return (
     <>
       <div className="intro_info_wrapper">
@@ -38,7 +42,7 @@ function App() {
               <option value="potatoes">potatoes</option>
               <option value="tomatoes">tomatoes</option>
               <option value="brussel_sprouts">brussel sprouts</option>
-              <option value="spiniach">spinach</option>
+              <option value="spinach">spinach</option>
             </select> 
           </form>
         </div>
