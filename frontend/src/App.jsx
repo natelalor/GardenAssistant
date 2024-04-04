@@ -1,33 +1,49 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
 
+
+
+// TODO LIST:
+// - finish setting up form (names, values, submit button(?))
+// - mobile view 
+// - api
+// - fix favicon in index.html not showing up
+
+
+
 function App() {
-  const [count, setCount] = useState(0)
+  // const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
+      <div className="intro_info_wrapper">
+        <h1>Time to Get Planting!</h1>
         <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
+          Welcome to the garden assistant tool. Please input below your dream garden's length and width, as well as the specified veggies you'd like to plant from the list. Once you click generate, it will calculate the best optimization for you garden layout based on the guidelines you've provided.
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div className="gathering_intel_wrapper">
+        <div className="dimensions_wrapper">
+
+          <form id="dimensions-form">
+            <label>Length:</label>
+            <input type="text" placeholder="110"></input>
+            <label>Width:</label>
+            <input type="text" placeholder="125"></input>
+
+            <label for="veggies">Veggie Selection List:</label>
+            <select name="veggies" id="veggies" multiple>
+              <option value="carrots">carrots</option>
+              <option value="potatoes">potatoes</option>
+              <option value="tomatoes">tomatoes</option>
+              <option value="brussel_sprouts">brussel sprouts</option>
+              <option value="spiniach">spinach</option>
+            </select> 
+          </form>
+        </div>
+        <button type="submit" form="dimensions-form">Generate</button>
+      </div>
     </>
   )
 }
