@@ -1,5 +1,5 @@
-import { useState } from 'react'
-
+import { useState, useEffect } from 'react'
+import axios from "axios"
 import './App.css'
 
 
@@ -15,10 +15,18 @@ import './App.css'
 function App() {
   // const [count, setCount] = useState(0)
   const [data, setData] = useState()
+  const [array, setArray] = useState([])
+
+  const fetchAPI = async () => {
+    const response = await axios.get("http://127.0.0.1:5000")
+    setArray(response.data.users)
+  }
 
   useEffect(() => {
-    
+    fetchAPI();
   }, [])
+
+
   return (
     <>
       <div className="intro_info_wrapper">
@@ -30,11 +38,11 @@ function App() {
       <div className="gathering_intel_wrapper">
         <div className="dimensions_wrapper">
 
-          <form id="dimensions-form">
+          <form id="dimensions-form" action="#" method="post">
             <label>Length:</label>
-            <input type="text" placeholder="110"></input>
+            <input type="text" id="length" placeholder="110"></input>
             <label>Width:</label>
-            <input type="text" placeholder="125"></input>
+            <input type="text" id="width" placeholder="125"></input>
 
             <label for="veggies">Veggie Selection List:</label>
             <select name="veggies" id="veggies" multiple>
