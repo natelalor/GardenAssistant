@@ -1,6 +1,6 @@
 ## Garden Assistant
 So you want to make a garden, but you aren't sure where to start. **Great!** Garden Assistant is a website where you can include some aspects of the garden you know you want, 
-and it will do the rest. Utilizing **row-based optimization algorithms**, it will use the aspects of the garden you need and will design your garden in the most efficient layout.
+and it will do the rest. Utilizing **row-based optimization algorithms**, it will use the aspects of the garden you need and will design your garden in the most efficient layout. All you will have to do is grab the shovel and watering can!
 
 ### Tech Stack
 - Front End: React integrated with Axios for HTTP requests.
