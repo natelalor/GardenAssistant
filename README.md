@@ -8,6 +8,6 @@ and it will do the rest. Utilizing **row-based optimization algorithms**, it wil
 
 ### Process
 This is a project I embarked on for a few specific reasons. First, I wanted to get more familiarity with the React framework, as well as javascript syntax. Further, I wanted to
-brush up on my Flask and SQL backend knowledge, and implementing that in an efficient and effective way. Lastly, it's always fun to implement Python APIs!
+brush up on my Flask and SQL backend knowledge, and implementing that in an efficient and effective way. Lastly, who doesn't love to implement Python APIs!
 
 _Project Timeline: March 2024 - Current_
