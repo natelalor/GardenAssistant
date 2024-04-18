@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from "axios"
+import axios from 'axios'
 import './App.css'
 
 
@@ -10,22 +10,44 @@ import './App.css'
 // - api
 // - fix favicon in index.html not showing up
 
-
-
 function App() {
-  // const [count, setCount] = useState(0)
-  const [data, setData] = useState()
-  const [array, setArray] = useState([])
+  const [array, setArray] = useState([]);
 
-  const fetchAPI = async () => {
-    const response = await axios.get("http://127.0.0.1:5000")
-    setArray(response.data.users)
-  }
-
+  // tester to verify frontend - backend connection
   useEffect(() => {
-    fetchAPI();
-  }, [])
+    const fetchAPI = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/');
+        setArray(response.data.users);
+      } catch (error) {
+        console.error('!! Error fetching data:', error);
+      }
+      console.log(array)
+    };
 
+    fetchAPI();
+  }, []);
+
+  // function to "override" form submission, using ajax/axios to send
+  // form information to backend
+  function handleSubmit(event) {
+    event.preventDefault(); // this prevents the default form submission
+    const formData = new FormData(event.target); // gathern form data
+    const formDataObject = {};
+    formData.forEach((value, key) => {
+      formDataObject[key] = value;
+    });
+
+    // now that data is json object, request to backend
+    axios.post('http://localhost:5000/process-form', formDataObject)
+      .then(response => {
+        console.log('Form submitted successfully:', response.data.length, response.data.width, response.data.veggies);
+        // HANDLE RESPONSE HERE! !!!! !!!!
+      })
+      .catch(error => {
+        console.error('ERROR SUBMITTING FORM:', error);
+      });
+  }
 
   return (
     <>
@@ -38,7 +60,7 @@ function App() {
       <div className="gathering_intel_wrapper">
         <div className="dimensions_wrapper">
 
-          <form id="dimensions-form" action="#" method="post">
+          <form id="dimensions-form" action="#" method="post" onSubmit={handleSubmit}>
             <label>Length:</label>
             <input type="text" id="length" placeholder="110"></input>
             <label>Width:</label>
