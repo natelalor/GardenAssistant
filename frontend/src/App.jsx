@@ -26,7 +26,7 @@ function App() {
     };
 
     fetchAPI();
-  }, []);
+}, []);
 
   // function to "override" form submission, using ajax/axios to send
   // form information to backend
@@ -34,8 +34,19 @@ function App() {
     event.preventDefault(); // this prevents the default form submission
     const formData = new FormData(event.target); // gathern form data
     const formDataObject = {};
+
+    // this is to gather the <select> element options
     formData.forEach((value, key) => {
-      formDataObject[key] = value;
+      if (formDataObject[key]) {
+        if (!Array.isArray(formDataObject[key])) {
+          formDataObject[key] = [formDataObject[key]];
+        }
+        formDataObject[key].push(value);
+      } else {
+        formDataObject[key] = value;
+      }
+    console.log("FORM DATA", formData)
+    console.log("FORM DATA OBJECT", formDataObject)
     });
 
     // now that data is json object, request to backend
@@ -62,9 +73,9 @@ function App() {
 
           <form id="dimensions-form" action="#" method="post" onSubmit={handleSubmit}>
             <label>Length:</label>
-            <input type="text" id="length" placeholder="110"></input>
+            <input type="text" id="length" name="length" placeholder="110"></input>
             <label>Width:</label>
-            <input type="text" id="width" placeholder="125"></input>
+            <input type="text" id="width" name="width" placeholder="125"></input>
 
             <label for="veggies">Veggie Selection List:</label>
             <select name="veggies" id="veggies" multiple>
@@ -74,9 +85,9 @@ function App() {
               <option value="brussel_sprouts">brussel sprouts</option>
               <option value="spinach">spinach</option>
             </select> 
+            <button type="submit" form="dimensions-form">Generate</button>
           </form>
         </div>
-        <button type="submit" form="dimensions-form">Generate</button>
       </div>
     </>
   )
