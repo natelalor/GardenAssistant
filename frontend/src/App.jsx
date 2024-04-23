@@ -72,18 +72,18 @@ function App() {
         <div className="dimensions_wrapper">
 
           <form id="dimensions-form" action="#" method="post" onSubmit={handleSubmit}>
-            <label>Length:</label>
-            <input type="text" id="length" name="length" placeholder="110"></input>
-            <label>Width:</label>
-            <input type="text" id="width" name="width" placeholder="125"></input>
+            <label>Length (inches):</label>
+            <input type="text" id="length" name="length" placeholder="110" required></input>
+            <label>Width (inches):</label>
+            <input type="text" id="width" name="width" placeholder="125" required></input>
 
             <label for="veggies">Veggie Selection List:</label>
-            <select name="veggies" id="veggies" multiple>
-              <option value="carrots">carrots</option>
-              <option value="potatoes">potatoes</option>
-              <option value="tomatoes">tomatoes</option>
-              <option value="brussel_sprouts">brussel sprouts</option>
-              <option value="spinach">spinach</option>
+            <select name="veggies" id="veggies" multiple required>
+              <option value="Carrot">carrots</option>
+              <option value="Potato">potatoes</option>
+              <option value="Tomato">tomatoes</option>
+              <option value="Brussel Sprout">brussel sprouts</option>
+              <option value="Spinach">spinach</option>
             </select> 
             <button type="submit" form="dimensions-form">Generate</button>
           </form>

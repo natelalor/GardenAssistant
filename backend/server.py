@@ -2,7 +2,7 @@ from flask import Flask
 from flask import request, jsonify
 from config import app, db
 from models import Veggies
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 CORS(app)
 # algorithm imports
 import sqlite3
@@ -10,18 +10,32 @@ from pprint import pprint
 from Garden import Garden
 from Column import Column
 from Row import Row
+# for testing
+import logging
+logging.basicConfig(level=logging.DEBUG)  # Set the logging level to DEBUG
+
 
 @app.route("/", methods=["GET"])
+@cross_origin()
 def main():
     database_initialization()
+    # bob = "bob"
+    # logging.debug("TESTING VARIABLE: form_data: %s", bob)
 
+
+
+    # idk why but it gets mad if main doesnt return something
+    return {"message": "wassup"}
 
 # route that is receiving form information
 @app.route("/process-form", methods=["POST"])
+@cross_origin()
 def process_form():
     form_data = request.json
     length = form_data.get("length")
+    length = int(length)
     width = form_data.get("width")
+    width = int(width)
     veggies = form_data.get("veggies")
     my_garden = Garden(length, width)
     
@@ -31,6 +45,8 @@ def process_form():
     # run algorithm to decide # of column objects to store in garden collection
     subsets, number_of_columns = how_many_columns(veggies, my_garden)
 
+    # Log variable values
+    logging.debug("TESTING VARIABLE: form_data: %s", form_data)
 
     print("You will need ", number_of_columns, " columns in your garden.")
     print("Here is your plant list, displayed for each column: ")
@@ -53,7 +69,7 @@ def process_form():
     # algorithm to populate columns
     # until garden is FULL of rows
     for index, column in enumerate(my_garden.columns):
-        result_list = fill_the_garden(column, subsets[index], my_garden.width, my_garden.length, veggie_list)
+        result_list = fill_the_garden(column, subsets[index], my_garden.width, my_garden.length, veggies)
         
     # algorithm to create rows
 
@@ -68,12 +84,12 @@ def process_form():
     print("Columns: ", len(my_garden.columns))
     print("Plants in columns: ", subsets)
     print(result_list)
-    print(veggie_list)
+    print(veggies)
 
-    iterator = 0
-    for veggie in veggie_list:
-        print("You can plant", result_list[iterator][0], veggie_list[iterator] + "s in your garden via", result_list[iterator][1], "rows")
-        iterator += 1
+    # iterator = 0
+    # for veggie in veggies:
+    #     print("You can plant", result_list[iterator][0], veggies[iterator] + "s in your garden via", result_list[iterator][1], "rows")
+    #     iterator += 1
 
     # TODO: do we make a variable in Column class so column objects count how many row of each plant type they are holding?
     # how do we collect which veggies are in each row??? how do we add that up?
@@ -111,6 +127,9 @@ def database_initialization():
 
     # add to table with our veggies
 
+    # sbp = Space Between Plants
+    # sbr = Space Between Rows
+
     # carrots
     cursor.execute("INSERT OR IGNORE INTO veggies VALUES (1, 'Carrot', 6, 23)")
     # potatoes
@@ -138,33 +157,32 @@ def database_initialization():
 def how_many_columns(veggie_list, my_garden):
     total_sbr = 0
     sbr_list = []
+    if (type(veggie_list) == str):
+        veggie_list = [veggie_list]
     for veggie in veggie_list:
         sbr = retrieve_sbr(veggie)
         total_sbr += sbr
         sbr_list.append(sbr)
 
-    print(total_sbr)
-
     subsets = []
-    # TODO: FIX THIS!!!! CHANGE * 12! 'length' INPUT WONT ALWAYS BE IN FEET!
-    if (my_garden.length * 12) > total_sbr:
+    if my_garden.length > total_sbr:
         subsets.append(veggie_list)
         return subsets, 1
     else:
         # this is where we need to figure out how many columns to add
         # TODO: fix the math here
-        subsets, number_of_columns = column_facilitator(
-            2, (my_garden.length * 12), subsets, veggie_list, sbr_list
-        )
+        subsets, number_of_columns = column_facilitator(2, my_garden.length, subsets, veggie_list, sbr_list)
         return subsets, number_of_columns
 
+# returns sbr of specific veggie name that is the parameter
 def retrieve_sbr(veggie):
     # establish connection to db
     conn = sqlite3.connect("veggies.db")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT sbr FROM veggies WHERE name=" + veggie)
-    result = cursor.fetchone() # TODO: test this -- why is 'veggie' variable a letter instead of a string?
+    # cursor.execute("SELECT sbr FROM veggies WHERE name=" + veggie)
+    cursor.execute("SELECT sbr FROM veggies WHERE name = ?", (veggie,))
+    result = cursor.fetchone()
     sbr = result[0]
 
     return sbr
@@ -178,7 +196,7 @@ def column_facilitator(number_of_subsets, total_length, subsets, veggie_list, sb
 
     # divvy up plants into equal chunks
     subsets = chunkify(veggie_list, number_of_subsets)
-
+    
     # now, match the sbr_subsets list to be the same exact format as subsets list
     # i.e., make it a list of lists, where each list holds the same subset of plants
     sbr_subsets = []
@@ -195,6 +213,11 @@ def column_facilitator(number_of_subsets, total_length, subsets, veggie_list, sb
 
         sbr_subsets.append(new_list)
 
+    # TODO:
+    # this will infinite loop if the total_length (i.e., user input for length) is smaller than
+    # the highest sbr. eventually we need user input validation if that occurs for smallest plant
+    # (i.e., if you select Potato, you need at least 25 length)
+    
     # TODO: MAKE THIS ALGORITHM MORE EFFICIENT!
     # goal of algorithm:
     # sbr_subsets is currently [[24, 5], [23]]
@@ -213,9 +236,7 @@ def column_facilitator(number_of_subsets, total_length, subsets, veggie_list, sb
     if highest_sbr < total_length:
         return subsets, number_of_subsets
     else:
-        column_facilitator(
-            number_of_subsets + 1, total_length, subsets, veggie_list, sbr_list
-        )
+        column_facilitator(number_of_subsets + 1, total_length, subsets, veggie_list, sbr_list)
 
 
 # thank you for this contribution, https://stackoverflow.com/questions/2130016/splitting-a-list-into-n-parts-of-approximately-equal-length
@@ -228,16 +249,13 @@ def chunkify(lst, n):
 # then will return amount of rows of which plant
 def fill_the_garden(column, subset, total_width, total_length, veggie_list):
 
-    print("COLUMN: ", column)
-    print("SUBSETS: ", subset)
-
     # also will query database to retrieve SBP info for each plant, to see how it will apply to length
 
     # establish connection to db
     conn = sqlite3.connect("veggies.db")
     cursor = conn.cursor()
 
-    remaining_length = total_length * 12
+    remaining_length = total_length
 
     results_list = []
 
@@ -245,35 +263,34 @@ def fill_the_garden(column, subset, total_width, total_length, veggie_list):
     total_sbr_list = []
     total_plants_per_row_per_plant = []
     smallest_sbr = 999
-    for list in subset:  # this is because input is a list in a list, gotta iterate through outer shell first (not more complex)
-        sbr_list = []
-        for veggie in list:
-            cursor.execute("SELECT sbr, sbp FROM veggies WHERE veggie_id=" + veggie)
-            result = cursor.fetchone()
-            sbr = result[0]
-            sbp = result[1]
-            sbr_list.append(sbr)
+    logging.debug("TESTING VARIABLE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: subset: %s", subset)
+    sbr_list = []
+    for veggie in subset:
+        cursor.execute("SELECT sbr, sbp FROM veggies WHERE name = ?", (veggie,))
+        result = cursor.fetchone()
+        sbr = result[0]
+        sbp = result[1]
+        sbr_list.append(sbr)
 
-            # find smallest sbr
-            if smallest_sbr > sbr:
-                smallest_sbr = sbr
+        # find smallest sbr
+        if smallest_sbr > sbr:
+            smallest_sbr = sbr
 
-            # figure out how many plants you can make per row
-            total_plants_per_row = (total_width * 12) // sbp
-            total_plants_per_row_per_plant.append(total_plants_per_row)
-            # print("able to plant ", total_plants_per_row, " veggies of plant type ", veggie, " per row.")
+        # figure out how many plants you can make per row
+        total_plants_per_row = (total_width) // sbp
+        total_plants_per_row_per_plant.append(total_plants_per_row)
 
-            remaining_length -= sbr
-            number_of_rows = 1
-            new_list = [total_plants_per_row, number_of_rows]
+        remaining_length -= sbr
+        number_of_rows = 1
+        new_list = [total_plants_per_row, number_of_rows]
 
-            results_list.append(new_list)
-            new_row = Row(veggie)
-            column.rows.append(new_row)
-        total_sbr_list.append(sbr_list)
+        results_list.append(new_list)
+        new_row = Row(veggie)
+        column.rows.append(new_row)
+    total_sbr_list.append(sbr_list)
 
-    print(results_list)
-    print("SBR LIST:", total_sbr_list)
+    # print(results_list)
+    # print("SBR LIST:", total_sbr_list)
 
     # represents the position in the lists of the different plants
     iterator = 0
