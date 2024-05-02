@@ -14,6 +14,12 @@ from Row import Row
 import logging
 logging.basicConfig(level=logging.DEBUG)  # Set the logging level to DEBUG
 
+# CORS enabling
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 @app.route("/", methods=["GET"])
 @cross_origin()
@@ -86,10 +92,15 @@ def process_form():
     print(result_list)
     print(veggies)
 
-    # iterator = 0
-    # for veggie in veggies:
-    #     print("You can plant", result_list[iterator][0], veggies[iterator] + "s in your garden via", result_list[iterator][1], "rows")
-    #     iterator += 1
+    iterator = 0
+    for veggie in subsets:
+        print("iterator ", iterator)
+        print("veggie ", veggie)
+        print("also veggie? ", veggies[iterator])
+        print("# of certain veggie: ", result_list[iterator][0])
+        print("# of rows of certain veggie: ", result_list[iterator][1])
+        print("You can plant", result_list[iterator][0], veggies[iterator] + "s in your garden via", result_list[iterator][1], "rows")
+        iterator += 1
 
     # TODO: do we make a variable in Column class so column objects count how many row of each plant type they are holding?
     # how do we collect which veggies are in each row??? how do we add that up?
@@ -98,9 +109,9 @@ def process_form():
 
 
 
+    return jsonify({"columns": len(my_garden.columns), "plants_per_column": subsets, "results_list": result_list, "veggies": veggies})
 
-
-    return jsonify({"length": length, "width": width, "veggies": veggies})
+    # return jsonify({"length": length, "width": width, "veggies": veggies})
 
 
 # =========================================== #
@@ -248,7 +259,6 @@ def chunkify(lst, n):
 # a function to fill the column with rows of it's associated list of veggies
 # then will return amount of rows of which plant
 def fill_the_garden(column, subset, total_width, total_length, veggie_list):
-
     # also will query database to retrieve SBP info for each plant, to see how it will apply to length
 
     # establish connection to db
@@ -263,7 +273,7 @@ def fill_the_garden(column, subset, total_width, total_length, veggie_list):
     total_sbr_list = []
     total_plants_per_row_per_plant = []
     smallest_sbr = 999
-    logging.debug("TESTING VARIABLE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: subset: %s", subset)
+    # logging.debug("TESTING VARIABLE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: subset: %s", subset)
     sbr_list = []
     for veggie in subset:
         cursor.execute("SELECT sbr, sbp FROM veggies WHERE name = ?", (veggie,))
@@ -298,7 +308,10 @@ def fill_the_garden(column, subset, total_width, total_length, veggie_list):
     # main loop: will keep adding plants, iterating through plant type (for equal representation), 
     # until there is no more length available 
     while remaining_length >= smallest_sbr:
-        
+        # print("rem:", remaining_length)
+        # print(smallest_sbr)
+        # print("iterator", iterator)
+        # print("total_sbr_list", total_sbr_list)
         if remaining_length - total_sbr_list[iterator][0] >= 0:
             # means we can add another row of current plant
 
@@ -318,7 +331,7 @@ def fill_the_garden(column, subset, total_width, total_length, veggie_list):
             iterator = 0
         else:
             iterator += 1
-
+    
     return results_list
 
 

@@ -18,6 +18,12 @@ function App() {
     width: '',
     veggies: []
   });
+  const [formData, setFormData] = useState({
+    columns: '',
+    plants_per_column: '',
+    results_list: '',
+    veggies: ''
+  });
 
   // tester to verify frontend - backend connection
   useEffect(() => {
@@ -51,14 +57,20 @@ function App() {
       } else {
         formDataObject[key] = value;
       }
-    console.log("FORM DATA", formData)
+    // console.log("FORM DATA", formData)
     });
 
     // now that data is json object, request to backend
     axios.post('http://localhost:5000/process-form', formDataObject)
       .then(response => {
-        console.log('Form submitted successfully:', response.data.length, response.data.width, response.data.veggies);
-        // so garden appears once you hit submit button:
+        console.log('Form submitted successfully:', response.data.columns, response.data.plants_per_column, response.data.results_list, response.data.veggies);
+        // update state with response data to reference later
+        setFormData({
+          columns: response.data.columns,
+          plants_per_column: response.data.plants_per_column,
+          results_list: response.data.results_list,
+          veggies: response.data.veggies
+        });
         setShowResult(true); 
         // this is to change the garden's CSS length & width to be scalable with
         // the user's input for their garden's length & width
@@ -95,7 +107,7 @@ function App() {
             <label>Width (inches):</label>
             <input type="text" id="width" name="width" placeholder="125" required></input>
 
-            <label for="veggies">Veggie Selection List:</label>
+            <label htmlFor="veggies">Veggie Selection List:</label>
             <select name="veggies" id="veggies" multiple required>
               <option value="Carrot">carrots</option>
               <option value="Potato">potatoes</option>
@@ -109,7 +121,10 @@ function App() {
           {showResult ? (
             <div className="result-container">
               <div className="result-wrapper" style={{ width: `${userInput.width}px`, height: `${userInput.length}px` }}>
-                <p>Result: Your result goes here</p>
+                <p>{formData.columns}</p>
+                <p>{formData.plants_per_column}</p>
+                <p>{formData.results_list}</p>
+                <p>{formData.veggies}</p>
               </div>
             </div>
           ) : (
