@@ -12,6 +12,12 @@ import './App.css'
 
 function App() {
   const [array, setArray] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [userInput, setUserInput] = useState({
+    length: '',
+    width: '',
+    veggies: []
+  });
 
   // tester to verify frontend - backend connection
   useEffect(() => {
@@ -46,14 +52,26 @@ function App() {
         formDataObject[key] = value;
       }
     console.log("FORM DATA", formData)
-    console.log("FORM DATA OBJECT", formDataObject)
     });
 
     // now that data is json object, request to backend
     axios.post('http://localhost:5000/process-form', formDataObject)
       .then(response => {
         console.log('Form submitted successfully:', response.data.length, response.data.width, response.data.veggies);
+        // so garden appears once you hit submit button:
+        setShowResult(true); 
+        // this is to change the garden's CSS length & width to be scalable with
+        // the user's input for their garden's length & width
+        setUserInput({
+          length: formDataObject.length,
+          width: formDataObject.width,
+          veggies: formDataObject.veggies
+        });
+
+
         // HANDLE RESPONSE HERE! !!!! !!!!
+
+
       })
       .catch(error => {
         console.error('ERROR SUBMITTING FORM:', error);
@@ -65,7 +83,7 @@ function App() {
       <div className="intro_info_wrapper">
         <h1>Time to Get Planting!</h1>
         <p>
-          Welcome to the garden assistant tool. Please input below your dream garden's length and width, as well as the specified veggies you'd like to plant from the list. Once you click generate, it will calculate the best optimization for you garden layout based on the guidelines you've provided.
+          Please input below your dream garden's length and width, as well as the specified veggies you'd like to plant from the list. Once you click generate, it will calculate the best optimization for you garden layout based on the guidelines you've provided.
         </p>
       </div>
       <div className="gathering_intel_wrapper">
@@ -87,6 +105,19 @@ function App() {
             </select> 
             <button type="submit" form="dimensions-form">Generate</button>
           </form>
+          <div className="content-container">
+          {showResult ? (
+            <div className="result-container">
+              <div className="result-wrapper" style={{ width: `${userInput.width}px`, height: `${userInput.length}px` }}>
+                <p>Result: Your result goes here</p>
+              </div>
+            </div>
+          ) : (
+            <div className="result-container">
+              <p>Click generate to get your garden here!</p>
+            </div>
+          )}
+          </div>
         </div>
       </div>
     </>
